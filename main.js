@@ -1,32 +1,33 @@
-let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-let renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+const particles = new THREE.BufferGeometry();
+const positions = [];
+const colors = [];
+const count = 5000;
 
-let geometry = new THREE.BufferGeometry();
-let vertices = [];
-for (let i = 0; i < 1000; i++) {
-  vertices.push(Math.random()*10-5, Math.random()*10-5, Math.random()*10-5);
+for(let i = 0; i < count; i++){
+    const r = Math.random() * 5;
+    const angle = Math.random() * 2 * Math.PI;
+    const spin = r * 1.5;
+
+    positions.push(
+        r * Math.cos(angle + spin), 
+        (Math.random()-0.5)*0.2, 
+        r * Math.sin(angle + spin)
+    );
+
+    colors.push(Math.random(), Math.random(), 1); // bluish galaxy
 }
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
-let material = new THREE.PointsMaterial({
-  size: 0.1,
-  sizeAttenuation: true,
-  depthWrite: false,
-  blending: THREE.AdditiveBlending,
-  vertexColors: false
-});
+particles.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+particles.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-let points = new THREE.Points(geometry, material);
-scene.add(points);
+const material = new THREE.PointsMaterial({ size: 0.05, vertexColors: true });
+const galaxy = new THREE.Points(particles, material);
 
-camera.position.z = 10;
+scene.add(galaxy);
 
 function animate() {
-  requestAnimationFrame(animate);
-  points.rotation.y += 0.01;
-  renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+    galaxy.rotation.y += 0.001; // slow rotation
+    renderer.render(scene, camera);
 }
 animate();
