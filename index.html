@@ -2,11 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Three.js Points Example</title>
-  <style>body { margin:0; overflow:hidden; }</style>
+  <title>Galaxy Animation</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
+  <!-- Three.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-  <script src="main.js"></script>
+  <script>
+    // Scene, Camera, Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Galaxy Parameters
+    const particlesCount = 5000;
+    const geometry = new THREE.BufferGeometry();
+    const positions = [];
+    const colors = [];
+
+    for(let i=0; i<particlesCount; i++){
+      const r = Math.random() * 5;               // radius
+      const angle = Math.random() * 2 * Math.PI; // angle
+      const spin = r * 1.5;                      // spiral twist
+
+      // Spiral galaxy positions
+      const x = r * Math.cos(angle + spin);
+      const y = (Math.random()-0.5) * 0.5;       // slight vertical spread
+      const z = r * Math.sin(angle + spin);
+
+      positions.push(x, y, z);
+
+      // Star color gradient: center bright, edges dim
+      const t = r / 5;
+      colors.push(1-t, 0.5*t, 1); 
+    }
+
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors,3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.05,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    const galaxy = new THREE.Points(geometry, material);
+    scene.add(galaxy);
+
+    camera.position.z = 10;
+
+    // Resize Handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Animation Loop
+    function animate(){
+      requestAnimationFrame(animate);
+      galaxy.rotation.y += 0.001;   // slow rotation
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
 </body>
 </html>
